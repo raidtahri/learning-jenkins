@@ -1,0 +1,12 @@
+*.class
+/target/
+*.log
+*.tmp
+*.swp
+.idea/
+.vscode/
+*.jar
+*.war
+*.ear
+*.class
+*.iml
