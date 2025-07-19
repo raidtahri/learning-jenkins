@@ -1,6 +1,8 @@
 pipeline {
     agent any
-
+    tools {
+        maven 'maven3.9'
+    }
     environment {
         IMAGE_NAME = 'hello-maven-app'
         IMAGE_TAG = 'latest'
@@ -9,13 +11,16 @@ pipeline {
     stages {
         stage('Build App') {
             steps {
+                dir('hello-maven-docker-pipeline') {
                 echo 'Building the app with Maven'
                 sh 'mvn clean package'
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
+                 dir('hello-maven-docker-pipeline') {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub',
                     usernameVariable: 'DOCKER_USER',
@@ -23,6 +28,7 @@ pipeline {
                 )]) {
                     echo 'Building Docker Image'
                     sh "docker build -t ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG} ."
+                }
                 }
             }
         }
@@ -45,4 +51,5 @@ pipeline {
         }
     }
 }
+
 
