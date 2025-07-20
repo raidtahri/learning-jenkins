@@ -1,0 +1,64 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'maven3.9'
+    }
+
+    parameters {
+        string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Tag for Docker Image')
+        booleanParam(name: 'PUSH_TO_DOCKERHUB', defaultValue: true, description: 'Should push image to Docker Hub?')
+        choice(name: 'MAVEN_GOAL', choices: ['clean install', 'clean package', 'clean package -DskipTest'], description: 'Choose Maven goal')
+    }
+
+    environment {
+        IMAGE_NAME = 'hello-maven-app'
+    }
+
+    stages {
+        stage('Build App') {
+            steps {
+                dir('hello-maven-parameterized-pipeline') {
+                    echo "Building the app with Maven goal: ${params.MAVEN_GOAL}"
+                    sh "mvn ${params.MAVEN_GOAL}"
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('hello-maven-parameterized-pipeline') {
+                    withCredentials([usernamePassword(
+                        credentialsId: 'dockerhub',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )]) {
+                        echo "Building Docker image with tag: ${params.IMAGE_TAG}"
+                        sh "docker build -t ${DOCKER_USER}/${IMAGE_NAME}:${params.IMAGE_TAG} ."
+                    }
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            when {
+                expression { params.PUSH_TO_DOCKERHUB }
+            }
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    echo "Pushing image ${DOCKER_USER}/${IMAGE_NAME}:${params.IMAGE_TAG} to Docker Hub"
+                    sh """
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker push ${DOCKER_USER}/${IMAGE_NAME}:${params.IMAGE_TAG}
+                        docker logout
+                    """
+                }
+            }
+        }
+    }
+}
+
