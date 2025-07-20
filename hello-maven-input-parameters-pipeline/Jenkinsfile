@@ -1,0 +1,73 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'maven3.9'
+    }
+
+    parameters {
+        string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Tag for Docker Image')
+        choice(name: 'MAVEN_GOAL', choices: ['clean install', 'clean package', 'clean package -DskipTests'], description: 'Choose Maven goal')
+    }
+
+    environment {
+        IMAGE_NAME = 'hello-maven-app'
+    }
+
+    stages {
+        stage('Build App') {
+            steps {
+                dir('hello-maven-input-parameters-pipeline') {
+                    echo "Building the app with Maven goal: ${params.MAVEN_GOAL}"
+                    sh "mvn ${params.MAVEN_GOAL}"
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('hello-maven-input-parameters-pipeline') {
+                    withCredentials([usernamePassword(
+                        credentialsId: 'dockerhub',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )]) {
+                        echo "Building Docker image with tag: ${params.IMAGE_TAG}"
+                        sh "docker build -t ${DOCKER_USER}/${IMAGE_NAME}:${params.IMAGE_TAG} ."
+                    }
+                }
+            }
+        }
+
+        stage('Confirm Push to Docker Hub') {
+            steps {
+              input(
+                  message: 'Do you want to push the image to Docker Hub?',
+                  ok: 'Yes, Push it',
+                  parameters: [
+                      booleanParam(name: 'CONFIRM_PUSH', defaultValue: true, description: 'Confirm push to Docker Hub')
+    ]
+)
+
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    echo "Pushing image ${DOCKER_USER}/${IMAGE_NAME}:${params.IMAGE_TAG} to Docker Hub"
+                    sh """
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker push ${DOCKER_USER}/${IMAGE_NAME}:${params.IMAGE_TAG}
+                        docker logout
+                    """
+                }
+            }
+        }
+    }
+}
+
