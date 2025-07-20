@@ -43,7 +43,7 @@ pipeline {
             steps {
               input(
                   message: 'Do you want to push the image to Docker Hub?',
-                  ok: 'Yes, Push it',
+                  ok: 'Proceed',
                   parameters: [
                       booleanParam(name: 'CONFIRM_PUSH', defaultValue: true, description: 'Confirm push to Docker Hub')
     ]
