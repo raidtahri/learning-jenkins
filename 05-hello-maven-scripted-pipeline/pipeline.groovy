@@ -1,12 +1,12 @@
 def buildApp(goal) {
-    dir('hello-maven-scripted-pipeline') {
+    dir('05-hello-maven-scripted-pipeline') {
         echo "Building the app with Maven goal: ${goal}"
         sh "mvn ${goal}"
     }
 }
 
 def buildDockerImage(imageName, imageTag) {
-    dir('hello-maven-scripted-pipeline') {
+    dir('05-hello-maven-scripted-pipeline') {
         withCredentials([usernamePassword(
             credentialsId: 'dockerhub',
             usernameVariable: 'DOCKER_USER',

@@ -17,7 +17,7 @@ pipeline {
     stages {
         stage('Build App') {
             steps {
-                dir('hello-maven-input-parameters-pipeline') {
+                dir('04-hello-maven-input-parameters-pipeline') {
                     echo "Building the app with Maven goal: ${params.MAVEN_GOAL}"
                     sh "mvn ${params.MAVEN_GOAL}"
                 }
@@ -26,7 +26,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                dir('hello-maven-input-parameters-pipeline') {
+                dir('04-hello-maven-input-parameters-pipeline') {
                     withCredentials([usernamePassword(
                         credentialsId: 'dockerhub',
                         usernameVariable: 'DOCKER_USER',
