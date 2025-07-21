@@ -1,4 +1,4 @@
-def pipelineScript = load 'pipeline.groovy'
+def pipelineScript
 
 pipeline {
     agent any
@@ -9,7 +9,7 @@ pipeline {
 
     parameters {
         string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Tag for Docker Image')
-        choice(name: 'MAVEN_GOAL', choices: ['clean install', 'clean package', 'clean package -DskipTests'], description: 'Choose Maven goal')
+        choice(name: 'MAVEN_GOAL', choices: ['clean package -DskipTests', 'clean package', 'clean install'], description: 'Choose Maven goal')
     }
 
     environment {
@@ -17,6 +17,15 @@ pipeline {
     }
 
     stages {
+        stage('Load Pipeline Script') {
+            steps {
+                dir('05-hello-maven-scripted-pipeline') { 
+                    script {
+                        pipelineScript = load 'pipeline.groovy'
+                    }
+                }
+            }
+        }
         stage('Build App') {
             steps {
                 script {
