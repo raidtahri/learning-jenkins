@@ -1,0 +1,52 @@
+def pipelineScript = load 'pipeline.groovy'
+
+pipeline {
+    agent any
+
+    tools {
+        maven 'maven3.9'
+    }
+
+    parameters {
+        string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Tag for Docker Image')
+        choice(name: 'MAVEN_GOAL', choices: ['clean install', 'clean package', 'clean package -DskipTests'], description: 'Choose Maven goal')
+    }
+
+    environment {
+        IMAGE_NAME = 'hello-maven-app'
+    }
+
+    stages {
+        stage('Build App') {
+            steps {
+                script {
+                    pipelineScript.buildApp(params.MAVEN_GOAL)
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    pipelineScript.buildDockerImage(env.IMAGE_NAME, params.IMAGE_TAG)
+                }
+            }
+        }
+
+        stage('Confirm Push to Docker Hub') {
+            steps {
+                script {
+                    pipelineScript.confirmPushToDockerHub()
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    pipelineScript.pushToDockerHub(env.IMAGE_NAME, params.IMAGE_TAG)
+                }
+            }
+        }
+    }
+}
