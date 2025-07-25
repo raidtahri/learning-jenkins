@@ -1,4 +1,4 @@
-@Library('jenkins-shared-library')_
+@Library('jenkins-shared-library') _
 pipeline {
     agent any
     tools {
@@ -25,7 +25,7 @@ pipeline {
 
         stage('Push to Docker Hub') {
             steps {
-                pushToDockerHub()
+                pushToDockerHub('IMAGE_NAME', 'IMAGE_TAG')
             }
         }
     }
