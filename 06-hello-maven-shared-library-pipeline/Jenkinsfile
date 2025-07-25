@@ -12,13 +12,14 @@ pipeline {
     stages {
         stage('Build App') {
             steps {
-                buildApp()
+                buildApp(IMAGE_NAME, IMAGE_TAG)
+        
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                 buildDockerImage()
+             buildDockerImage(IMAGE_NAME, IMAGE_TAG)
             }
         }
 
