@@ -12,20 +12,20 @@ pipeline {
     stages {
         stage('Build App') {
             steps {
-                buildApp('IMAGE_NAME', 'IMAGE_TAG')
+                buildApp(IMAGE_NAME, IMAGE_TAG)
         
             }
         }
 
         stage('Build Docker Image') {
             steps {
-             buildDockerImage('IMAGE_NAME', 'IMAGE_TAG')
+             buildDockerImage(IMAGE_NAME, IMAGE_TAG)
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
-                pushToDockerHub('IMAGE_NAME', 'IMAGE_TAG')
+                pushToDockerHub(IMAGE_NAME, IMAGE_TAG)
             }
         }
     }
