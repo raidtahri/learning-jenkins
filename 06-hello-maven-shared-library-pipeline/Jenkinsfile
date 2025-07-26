@@ -13,7 +13,7 @@ pipeline {
         stage('Build App') {
             steps {
                 script {
-                     buildApp(env.IMAGE_NAME, env.IMAGE_TAG)
+                     buildApp()
                 }
             }
         }
