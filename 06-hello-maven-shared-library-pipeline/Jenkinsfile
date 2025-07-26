@@ -12,20 +12,25 @@ pipeline {
     stages {
         stage('Build App') {
             steps {
-                buildApp(env.IMAGE_NAME, env.IMAGE_TAG)
-        
+                script {
+                     buildApp(env.IMAGE_NAME, env.IMAGE_TAG)
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-             buildDockerImage(env.IMAGE_NAME, env.IMAGE_TAG)
+                script {
+                    buildDockerImage(env.IMAGE_NAME, env.IMAGE_TAG)
+                }
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
-                pushToDockerHub(env.IMAGE_NAME, env.IMAGE_TAG)
+                script {
+                     pushToDockerHub(env.IMAGE_NAME, env.IMAGE_TAG)
+                }
             }
         }
     }
