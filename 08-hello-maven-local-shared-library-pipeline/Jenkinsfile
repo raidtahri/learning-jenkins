@@ -1,0 +1,42 @@
+library identifier: 'learning-jenkins-shared-library@main',
+        retriever: modernSCM([
+        $class: 'GitSCMSource',
+        remote: 'https://github.com/raidtahri/learning-jenkins-shared-library.git'   ]) _
+pipeline {
+    agent any
+    tools {
+        maven 'maven3.9'
+    }
+    environment {
+        IMAGE_NAME = 'hello-maven-app'
+        IMAGE_TAG = 'latest'
+    }
+
+    stages {
+        stage('Build App') {
+            steps {
+                script {
+                     buildApp()
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    buildDockerImage(env.IMAGE_NAME, env.IMAGE_TAG)
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                     pushToDockerHub(env.IMAGE_NAME, env.IMAGE_TAG)
+                }
+            }
+        }
+    }
+}
+
+
