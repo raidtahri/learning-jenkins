@@ -26,7 +26,7 @@ pipeline {
                 dir('09-hello-maven-versioning-pipeline') {
                     echo 'Extracting Maven project version'
                     script {
-                        def matcher = readfile('pom.xml)' =~ '<version>(.+)</version>'
+                        def matcher = readfile('pom.xml') =~ '<version>(.+)</version>'
                         def version = matcher[0][1]
                         echo "Project version: ${version}"
                         env.IMAGE_TAG = "$version-$BUILD_NUMBER"
