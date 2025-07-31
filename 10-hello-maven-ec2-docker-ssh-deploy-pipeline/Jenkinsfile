@@ -41,11 +41,11 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     echo 'Pushing Docker Image to Docker Hub'
-                    sh """
+                    sh '''
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                         docker push ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}
                         docker logout
-                    """
+                    '''
                 }
             }
         }
@@ -57,20 +57,21 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                 sshagent(credentials: ['ssh-ec2-eu-west-3-ec2-user']) {
-                     sh """
-                        ssh -o StrictHostKeyChecking=no ec2-user@52.47.140.248 <<'EOF'
+                     sh '''
+                        ssh -o StrictHostKeyChecking=no ec2-user@52.47.140.248 << EOF
                             echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
                             docker rm -f ${IMAGE_NAME} || true
                             docker pull ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}
                             docker run -d --name ${IMAGE_NAME} ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}
                             docker logout
-                            EOF
-                    """
+EOF
+                    '''
                     }
                 }
             }
         }
     }
 }
+
 
 
