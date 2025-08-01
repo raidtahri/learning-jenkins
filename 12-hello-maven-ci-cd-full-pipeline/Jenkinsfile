@@ -41,6 +41,7 @@ pipeline {
                         usernameVariable: 'GIT_USER',
                         passwordVariable: 'GIT_PASS'
                     )]) {
+                        echo 'Commiting version bump to GitHub'
                         sh '''
                             git config user.name "jenkins-bot"
                             git config user.email "raid.tahri.contact@gmail.com"
@@ -102,9 +103,11 @@ pipeline {
                 sshagent(credentials: ['ssh-ec2-eu-west-3-ec2-user']) {
                      sh '''
                         ssh -o StrictHostKeyChecking=no ec2-user@52.47.140.248 << EOF
+                            echo 'Pulling Docker image'
                             echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
                             docker rm -f ${IMAGE_NAME} || true
                             docker pull ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}
+                            echo 'running container'
                             docker run -d --name ${IMAGE_NAME} ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}
                             docker logout
 EOF
