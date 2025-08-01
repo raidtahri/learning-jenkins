@@ -1,0 +1,144 @@
+pipeline {
+    agent any
+    tools {
+        maven 'maven3.9'
+    }
+    environment {
+        IMAGE_NAME = 'hello-maven-app'
+    }
+
+    stages {
+        stage('Increment Version') {
+            steps {
+                dir('12-hello-maven-ci-cd-full-pipeline') {
+                    echo 'Parsing and incrementing Maven project version'
+                    sh '''
+                        mvn build-helper:parse-version versions:set \
+                        -DnewVersion=\\${parsedVersion.majorVersion}.\\${parsedVersion.minorVersion}.\\${parsedVersion.nextIncrementalVersion} \
+                        versions:commit
+                    '''
+                }
+            }
+        }
+        stage('Extract Version') {
+            steps {
+                dir('12-hello-maven-ci-cd-full-pipeline') {
+                    echo 'Extracting Maven project version'
+                    script {
+                        def matcher = readFile('pom.xml') =~ '<version>(.+)</version>'
+                        def version = matcher[0][1]
+                        echo "Project version: ${version}"
+                        env.IMAGE_TAG = "$version-$BUILD_NUMBER"
+                    }
+                }
+            }
+        }
+        stage('Commit Version Bump to GitHub') {
+            steps {
+                dir('12-hello-maven-ci-cd-full-pipeline') {
+                    withCredentials([usernamePassword(
+                        credentialsId: 'github-user-pat',
+                        usernameVariable: 'GIT_USER',
+                        passwordVariable: 'GIT_PASS'
+                    )]) {
+                        sh '''
+                            git config user.name "jenkins-bot"
+                            git config user.email "raid.tahri.contact@gmail.com"
+                            git add pom.xml
+                            git commit -m "chore(12-hello-maven-ci-cd-full-pipeline): bump version after build #$BUILD_NUMBER from jenkins" || echo "No changes to commit"
+                            git push https://${GIT_USER}:${GIT_PASS}@github.com/raidtahri/learning-jenkins.git HEAD:main
+                        '''
+                    }
+                }
+            }
+        }
+        stage('Build App') {
+            steps {
+                dir('12-hello-maven-ci-cd-full-pipeline') {
+                echo 'Building the app with Maven'
+                sh 'mvn clean package'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                 dir('12-hello-maven-ci-cd-full-pipeline') {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    echo 'Building Docker Image'
+                    sh 'docker build -t ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG} .'
+                }
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    echo 'Pushing Docker Image to Docker Hub'
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker push ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}
+                        docker logout
+                    '''
+                }
+            }
+        }
+         stage('Deploy to EC2') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                sshagent(credentials: ['ssh-ec2-eu-west-3-ec2-user']) {
+                     sh '''
+                        ssh -o StrictHostKeyChecking=no ec2-user@52.47.140.248 << EOF
+                            echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+                            docker rm -f ${IMAGE_NAME} || true
+                            docker pull ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}
+                            docker run -d --name ${IMAGE_NAME} ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}
+                            docker logout
+EOF
+                    '''
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Deployment completed successfully."
+    }
+        failure {
+            echo 'Deployment failed. Check the logs.'
+
+            mail to: 'raid.tahri.contact@gmail.com, devops@company.com',
+                 subject: "Jenkins Job Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                 body: """\
+Hello team,
+
+The Jenkins job *${env.JOB_NAME}* (build #${env.BUILD_NUMBER}) has **failed**.
+
+Console logs: ${env.BUILD_URL}console
+
+Please investigate.
+
+Jenkins
+"""    
+              }
+   }    
+
+}
+
+
+
