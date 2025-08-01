@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Build App') {
             steps {
-                dir('10-hello-maven-ec2-docker-ssh-deploy-pipeline') {
+                dir('11-hello-maven-ec2-docker-ssh-scriptedDeploy-pipeline') {
                 echo 'Building the app with Maven'
                 sh 'mvn clean package'
                 }
@@ -20,7 +20,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                 dir('10-hello-maven-ec2-docker-ssh-deploy-pipeline') {
+                 dir('11-hello-maven-ec2-docker-ssh-scriptedDeploy-pipeline') {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub',
                     usernameVariable: 'DOCKER_USER',
