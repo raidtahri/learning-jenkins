@@ -1,31 +1,26 @@
-<h1 align="center">☕ Hello Maven Pipeline</h1>
+<h1 align="center">01-hello-maven-basic-pipeline</h1>
 
-This is a minimal **Java Maven** project built to demonstrate a **Jenkins pipeline** with CI/CD stages and Docker integration.
-
-It's part of the [learning-jenkins](../) repository, which contains multiple Jenkins practice projects.
-
----
-
-## Project Overview
-
-This app is a simple "Hello World" Java program built with **Maven**, packaged into a **Docker image**, and automated using a **Jenkins declarative pipeline**.
-
-It follows DevOps best practices such as:
-- ✅ CI/CD with Jenkinsfile
-- ✅ Docker-based builds (multi-stage)
-- ✅ Java 17 compliance
-- ✅ Clean Git structure
+- This project demonstrates a **basic Jenkins pipeline** setup for a simple Java Maven application. It's the foundational project in a series designed to explore CI/CD concepts using Jenkins.
+- It's part of the [learning-jenkins](../) repository, which contains multiple Jenkins practice projects.
 
 ---
 
-## Technologies Used
+## Project structure
 
-| Tool         | Version       | Purpose                        |
-|--------------|---------------|--------------------------------|
-| Java         | 17            | Language & runtime             |
-| Maven        | 3.8.6         | Build & dependency management  |
-| Jenkins      | Any (pipeline) | CI/CD automation              |
-| Docker       | Latest        | Containerization               |
+This project contains:
+
+- `.gitignore`: defines files to ignore in Git version control
+- `Jenkinsfile`: defines the Jenkins pipeline stages
+- `README.md`: documentation for this project
+
+
+---
+
+## Prerequisites
+To follow along with these projects and get strarted locally, you need:
+- Jenkins installed and configured
+- Basic understanding of Jenkins Pipelines
+- Java and Maven
 
 ---
 
@@ -51,35 +46,14 @@ Hello from Maven + Jenkins!
 
 ---
 
-## How to Build & Run with Docker
-
-Requires Docker installed
-1. Build the image:
-```bash
-docker build -t hello-maven-app .
-```
-2. Run the container:
-```bash
-docker run --rm hello-maven-app
-```
-
-Expected output:
-Hello from Maven + Jenkins!
-
----
-
-## Learning Objectives
-
-  - Understand Java + Maven CI flow
-
-  - Write and test Jenkins pipelines
-
-  - Containerize apps using multi-stage Docker builds
-
-  - Prepare for real-world DevOps tasks
+## How to configure Jenkins
+- In Jenkins, create a new Pipeline project.
+- Point it to this repository.
+- Run the pipeline to observe the three basic stages.
 
 ---
 
 ## Author
 
-Made with ❤️ by [Raid Tahri] as part of a DevOps learning journey.
+Made with ❤️ by [Raid Tahri](https://github.com/raidtahri).  
+See the root [README](../README.md#author) for more details.
